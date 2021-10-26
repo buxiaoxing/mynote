@@ -68,6 +68,10 @@
   - element diff
 
     组件类型相同则进行元素级别的对比
+  
+- 高阶组件
+
+  参数是组件，返回值是新的组件
 
 #### React 入门
 
@@ -242,11 +246,17 @@
 
       这个方法在组件被卸载前调用，可以在这里执行一些清理工作，比如清楚组件中使用的定时器，清除 `componentDidMount` 中手动创建的 `DOM` 元素等，以避免引起内存泄漏
 
+- 生命周期写在组件的最开始
 
+  ```
+  class component{
+      生命周期
+      函数
+      render()
+  }
+  ```
 
-
-
-
+  
 
 #### React 脚手架
 
@@ -294,6 +304,10 @@
 
 
 #### React 组件
+
+- 状态提升
+
+  > react 应用中，任何可变数据应当只有一个相对应的唯一“数据源”。通常, state 都是首先添加到需要渲染数据的组件中去。然后，如果其他组件也需要这个 state ，那么你可以将它提升至这些组件的最近共同的父组件中。依靠 **至上而下的数据流**，而不是尝试在不同组件间同步 state 
 
 - 函数式组件
 
@@ -691,6 +705,22 @@
   - 受控组件
 
     将输入框绑定到状态里，状态里实时更新值，类似与 `vue` 的双向绑定的实现，由 react 管理表单数据
+  
+- `<Fragments>`
+
+  > 代码片段，当一个组件需要返回几个子组件时，可以使用 `<Fragments>` 包裹(因为组件需要唯一的根节点)，渲染时，仍然会渲染为几个组件。
+
+  使用
+
+  ```jsx
+  import {Fragment} from 'react'
+  
+  <Fragment></Fragment>	//可以写 key 属性
+  <></>	//不能使用任何属性
+  ```
+
+
+
 
 #### 组件通信的多种方式
 
@@ -784,7 +814,13 @@
 
      如果 `setState(obj)` 中的 对象，和 `state` 指向同一内存地址，则直接返回 `false`，不调用 `render()`
 
-     
+- 组件的错误边界
+
+  > 组件内 JavaScript 错误不应该导致整个应用崩溃
+  >
+  > class 组件中定义了 [`static getDerivedStateFromError()`](https://zh-hans.reactjs.org/docs/react-component.html#static-getderivedstatefromerror) 或 [`componentDidCatch()`](https://zh-hans.reactjs.org/docs/react-component.html#componentdidcatch) 这两个生命周期方法中的任意一个（或两个）时，那么它就变成一个错误边界。当抛出错误后，请使用 `static getDerivedStateFromError()` 渲染备用 UI ，使用 `componentDidCatch()` 打印错误信息。
+
+  
 
 #### React-Router
 
@@ -1695,7 +1731,126 @@
   class C: 读取A组件的数据显示 {this.props.data}
   ```
 
+
+#### 扩展
+
+- `Portals`
+
+  > 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的优秀方案
+
+  ```js
+  ReactDOM.createPortal(child, container)
+  ```
+
+  - 第一个参数是 React 元素
+  - 第二个参数是 DOM 元素
+
+  使用该方案会导致 React 树和 DOM 树不一致
+
+  > portal 仍存在于 *React 树*， 且与 *DOM 树* 中的位置无关，那么无论其子节点是否是 portal，像 context 这样的功能特性都是不变的，事件冒泡也是遵循 react 中的树结构
+
+- `Profiler`
+
+  > 测量渲染一个 React 应用多久渲染一次以及渲染一次的 “代价”
+
+- `react`中`state`在`constructor`里面和外面同时定义，`constructor` 内的会覆盖外面的
+
+#### Mobx
+
+![image-20210715162522687](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210715162522687.png)
+
+- `@observable`
+
+  给类属性添加可观测功能
+
+- `@action`
+
+  给类方法添加，可观察属性只能通过 `action` 方法修改
+
+- `@computed`
+
+  计算属性，类似 `vue` 的 `computed`
+
+  ```js
+  @computed
+  get double() {
+      return this.timer * 2
+  }
+  ```
+
+- `makeObservable` 方法，用于构造响应式对象
+
+  ```js
+  import { makeObservable, observable, action, computed } from "mobx"
   
+  class MobxStore {
+    @observable timer = 0
+    constructor() {
+      makeObservable(this)
+      setInterval(() => {
+        this.updateTimer()
+      }, 1000)
+    }
+    @action
+    updateTimer = () => {
+      this.timer += 1
+    }
+  
+    @action
+    resetTimer = () => {
+      this.timer = 0
+    }
+    @computed
+    get double() {
+      return this.timer * 2
+    }
+  }
+  
+  const store = new MobxStore()
+  
+  export default store
+  
+  ```
+
+- `makeAutoObservable` 
+
+  > 可以自动为属性加上对象的包装函数
+
+  ```js
+  import { makeAutoObservable } from "mobx"
+  
+  class MobxStore {
+    timer = 0
+    constructor() {
+      makeAutoObservable(this)
+      setInterval(() => {
+        this.updateTimer()
+      }, 1000)
+    }
+  
+    updateTimer = () => {
+      this.timer += 1
+    }
+  
+  
+    resetTimer = () => {
+      this.timer = 0
+    }
+  
+    get double() {
+      return this.timer * 2
+    }
+  }
+  
+  const store = new MobxStore()
+  
+  export default store
+  
+  ```
+
+
+
+
 
 ### webpack配置相关
 
@@ -2044,168 +2199,12 @@ class App extends Component {
 export default App;
 ```
 
+- 样式模块化添加多个样式
 
-
-### 其他笔记
-
-#### `JS` 修饰器(`decorator`)
-
-> 类似于 java 中的注解，修饰器是在编译时就执行的函数，只能修饰类，类的属性，类的方法，不能修饰函数和变量，因为函数和变量会提升
-
-- `@inject("store1","store2")`
-
-  给观察者组件注入可以访问的 `store `
-
-- `@observer`
-
-  定义该组件为观察者，可以使用 `store` 的属性和方法
-
-#### 数组的 `find()` 方法
-
-> 返回符合测试函数条件的第一个元素
-
-和 `filter` 相比， `filter` 返回的是所有符合测试函数条件的数组
-
-而 `find()` 只是返回 `filter` 数组的第一个元素
-
-```js
-arr = [
-    {name: 'alice', age: 20, sex: '女'},
-    {name: 'jack', age: 18, sex: '男'},
-    {name: 'bob', age: 22, sex: '男'}
-]
-
-var item = arr.find(element => (age <= 20))	
-//{name: 'alice', age: 20, sex: '女'}
-```
-
-
-
-
-
-#### 行内样式的缺点
-
-1. 样式不能复用
-2. 样式权重太高，样式不好覆盖
-3. 表现层与结构层没有分离
-4. 不能进行缓存，影响加载效率
-
-#### serve本地服务器
-
-- 安装
-
-  `npm i serve -g`
-
-- 使用
-
-  `serve [文件夹]`
-
-  或者直接在当前文件夹 `serve`
-
-#### 浏览器测试限制网速
-
-> 模拟不同网络环境下页面的表现
-
-![image-20210722113337298](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210722113337298.png)
-
-
-
-#### Mobx
-
-![image-20210715162522687](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210715162522687.png)
-
-- `@observable`
-
-  给类属性添加可观测功能
-
-- `@action`
-
-  给类方法添加，可观察属性只能通过 `action` 方法修改
-
-- `@computed`
-
-  计算属性，类似 `vue` 的 `computed`
-
-  ```js
-  @computed
-  get double() {
-      return this.timer * 2
-  }
+  ```jsx
+  <div className={`${s1} ${s2}`}>hello world</div
   ```
 
-- `makeObservable` 方法，用于构造响应式对象
-
-  ```js
-  import { makeObservable, observable, action, computed } from "mobx"
-  
-  class MobxStore {
-    @observable timer = 0
-    constructor() {
-      makeObservable(this)
-      setInterval(() => {
-        this.updateTimer()
-      }, 1000)
-    }
-    @action
-    updateTimer = () => {
-      this.timer += 1
-    }
-  
-    @action
-    resetTimer = () => {
-      this.timer = 0
-    }
-    @computed
-    get double() {
-      return this.timer * 2
-    }
-  }
-  
-  const store = new MobxStore()
-  
-  export default store
-  
-  ```
-
-- `makeAutoObservable` 
-
-  > 可以自动为属性加上对象的包装函数
-
-  ```js
-  import { makeAutoObservable } from "mobx"
-  
-  class MobxStore {
-    timer = 0
-    constructor() {
-      makeAutoObservable(this)
-      setInterval(() => {
-        this.updateTimer()
-      }, 1000)
-    }
-  
-    updateTimer = () => {
-      this.timer += 1
-    }
-  
-  
-    resetTimer = () => {
-      this.timer = 0
-    }
-  
-    get double() {
-      return this.timer * 2
-    }
-  }
-  
-  const store = new MobxStore()
-  
-  export default store
-  
-  ```
-
-
-
-#### taro
 
 
 
@@ -2481,147 +2480,536 @@ var item = arr.find(element => (age <= 20))
 
 - `git commit --amend -m ""`
 
-### 随笔
+- `git stash` `git stash pop`
 
-- 无障碍
+- `.git/arc/default-relative-commit`
 
-  > 帮着开发者和使用者以及浏览器更好的解读网页
+  > 该文件里面指定了arc的根分支
 
-- 代码分割
 
-  > 项目打包后，将将代码分别打包，加载网页时只加载需要的依赖
 
-- 高阶组件
+### TypeScript
 
-  > 参数是组件，返回值是新的组件
+> 是 js 的超集，最主要的就是增加了声明变量时可以确定类型
+>
+> example: `let isDone: boolean = false;`
 
-- 组件的错误边界
+#### 基础类型
 
-  > 组件内 JavaScript 错误不应该导致整个应用崩溃
-  >
-  > class 组件中定义了 [`static getDerivedStateFromError()`](https://zh-hans.reactjs.org/docs/react-component.html#static-getderivedstatefromerror) 或 [`componentDidCatch()`](https://zh-hans.reactjs.org/docs/react-component.html#componentdidcatch) 这两个生命周期方法中的任意一个（或两个）时，那么它就变成一个错误边界。当抛出错误后，请使用 `static getDerivedStateFromError()` 渲染备用 UI ，使用 `componentDidCatch()` 打印错误信息。
+- 布尔值：boolean
 
-- `<Fragments>`
+- 数字：number
 
-  > 代码片段，当一个组件需要返回几个子组件时，可以使用 `<Fragments>` 包裹(因为组件需要唯一的根节点)，渲染时，仍然会渲染为几个组件。
+  支持二进制(0b)，8进制(0o)，十进制，十六进制(0x)
 
-  使用
+- 字符串：string
 
-  ```jsx
-  import {Fragment} from 'react'
-  
-  <Fragment></Fragment>	//可以写 key 属性
-  <></>	//不能使用任何属性
+  单引号，双引号，模板字符串
+
+- 数组：`number[]，Array<number>`
+
+- 元组
+
+  > 元组类型允许表示一个已知元素数量和类型的数组
+
+  ```js
+  let x: [string,number] = ['hello', 10]
+  ```
+
+- 枚举
+
+  > 标准类型的一个补充，更友好的命名
+
+  ```typescript
+  enum Color {Red, Green, Blue}
+  let c: Color = Color.Green // 1，默认从0开始编号
   ```
 
   
 
-- 二级标签吸顶
+- Any
 
-- 滚动条仅在列表区
+  > 为不清楚类型的变量指定一个值
 
-- 接口数据
+  ```typescript
+  let notSure: any = 4
+  notSure = 'hello typescript'
+  ```
 
-- `position: sticky;`
+  与 Object 的区别：
 
-  > 滚动吸顶
+  any 能够调用类型上的方法而Object不能调用
+
+  ```typescript
+  let list: any[] = [1, true, 'free']
+  ```
+
+- Void
+
+  > 表示没有任何类型，一般用于函数没有返回值
+
+  ```typescript
+  function foo: void{
+      console.log("no return")
+  }
+  ```
+
+  声明一个 void 变量只能赋予它 `undefined` 和 `null`
+
+- null 和 undefined
+
+  > 这种类型的变量作用不是很大，默认情况下 null 和 undefined 的所有类型的子类型
+
+- never
+
+  > 表示永远不存在的值的类型
+
+  ```typescript
+  // 返回的 never 函数必须存在无法到达的终点
+  function error(message: string): never{
+      throw new Error(message)
+  }
+  
+  // 推断返回值为 never
+  function fail(){
+      return error("Something failed")
+  }
+  
+  // 返回的 never 函数必须存在无法到达的终点
+  function infiniteLoop(): never{
+      while(true){}
+  }
+  ```
+
+- Object
+
+  > 非原始类型，除 number, string, boolean, symbol, null, undefined 之外的类型
+
+- 类型断言
+
+  > 类似与其他语言中的类型转换
+
+  - 尖括号语法
+
+    ```typescript
+    let someValue: any = "this is a string"
+    let strLength: number = (<string>someValue).length
+    ```
+
+  - as 语法
+
+    ```typescript
+    let someValue: any = "this is a string"
+    let strLength: number = (someValue as string).length
+    ```
+
+  JSX 中只能使用 as 语法
+
+#### 变量声明
+
+- var
+
+  > `var`声明可以在包含它的函数，模块，命名空间或全局作用域内部任何位置被访问。声明提升
+
+  闭包的问题
+
+  ```typescript
+  for (var i = 0; i < 10; i++) {
+      setTimeout(function() { console.log(i); }, 100 * i);
+  }// 10 10 10 10 10 10 10 10 10
+  ```
+
+- let 
+
+  块作用域，块外是不能访问块内 let 定义的变量的
+
+- const
+
+  与 let 类似，引用的值不可变
+
+- 解构
+  - 数组解构
+  - 对象解构
+  - 展开操作符
+
+#### 接口
+
+> ts中接口的作用就是为类型命名和你的代码或第三方代码定义契约。
+
+```typescript
+interface LabelledValue{
+    label: string
+}
+```
+
+接口好比一个名字，用来描述要求，上面这个例子就表示一个有 `label` 属性切类型为 `string` 的对象
+
+- 可选属性，用 `?` 表示
+
+  ```typescript
+  interface SquareConfig {
+    color?: string;
+    width?: number;
+  }
+  ```
+
+- 只读属性
+
+  > 只能在对象刚刚创建的时候修改其值
+
+  ```typescript
+  interface Point{
+      readonly x: number;
+      readonly y: number;
+  }
+  ```
+
+  `ReadonlyArray<T> `只读数组
+
+  变量使用 `const` 属性使用 `readonly`
+
+
+
+
+### js
+#### JS性能优化
+
+##### 防抖与节流
+
+- 防抖
+
+  > 触发高频事件后n秒内函数只会执行一次，如果n秒内高频事件再次被触发，则重新计算时间
+
+- 节流
+
+  > 高频事件触发，但在n秒内只会执行一次，所以节流会稀释函数的执行频率
+
+  ```js
+  // 节流
+  function throttle(fn, delay) {
+      let valid = true
+      return function () {
+          if (!valid) {
+              return false
+          }
+          valid = false
+          setTimeout(() => {
+              fn()
+              valid = true
+          }, delay)
+      }
+  }
+  // 防抖
+  function debounce(fn, delay) {
+      let timer = null
+      return function () {
+          if (timer) {
+              clearTimeout(timer)
+          }
+          timer = setTimeout(fn, delay)
+      }
+  }
+  
+  function showTop() {
+      var scrollTop = document.body.scrollTop || document.documentElement.scrollTop
+      console.log("滚动条位置" + scrollTop)
+  }
+  window.onscroll = throttle(showTop, 1000)
+  ```
+
+#### `popstate` 事件
+
+> 当活动历史记录条目更改时，将触发popstate事件
+
+
+
+#### 输入框的 `blur` 事件与 `click` 事件冲突
+
+> 原因：blur 事件在 click 之前触发
+>
+> 解决：
+>
+> 1. 延时
+>
+> 2. 可以在mousedown上阻止blur事件发生，然后再在click事件上触发blur事件
+
+
+
+#### 模版字符串嵌套
+
+```js
+const imgUrl = `url(${require(`${bgImg}`)})`
+```
+
+
+
+#### `JS` 修饰器(`decorator`)
+
+> 类似于 java 中的注解，修饰器是在编译时就执行的函数，只能修饰类，类的属性，类的方法，不能修饰函数和变量，因为函数和变量会提升
+
+- `@inject("store1","store2")`
+
+  给观察者组件注入可以访问的 `store `
+
+- `@observer`
+
+  定义该组件为观察者，可以使用 `store` 的属性和方法
+
+#### 数组的 `find()` 方法
+
+> 返回符合测试函数条件的第一个元素
+
+和 `filter` 相比， `filter` 返回的是所有符合测试函数条件的数组
+
+而 `find()` 只是返回 `filter` 数组的第一个元素
+
+```js
+arr = [
+    {name: 'alice', age: 20, sex: '女'},
+    {name: 'jack', age: 18, sex: '男'},
+    {name: 'bob', age: 22, sex: '男'}
+]
+
+var item = arr.find(element => (age <= 20))	
+//{name: 'alice', age: 20, sex: '女'}
+```
+
+
+
+
+
+### css
+
+#### 兼容问题
+
+- 浏览器兼容问题
+
+  - hack
+
+    1. 火狐浏览器hack写法
+
+       ```css
+       // 火狐浏览器样式兼容
+       @-moz-document url-prefix() {
+           .vjs-slider-vertical .vjs-volume-level:before {
+               left: -0.3em;
+       
+           }
+       
+           .video-js .vjs-play-progress::before {
+               top: -0.1em;
+               font-size: 1em
+           }
+       }
+       ```
+
+    2. safari浏览器hack写法
+
+       ```css
+       //safari浏览器样式兼容
+       @media not all and (min-resolution:.001dpcm) {
+           @supports (-webkit-appearance:none) {
+       
+               .vjs-slider-vertical .vjs-volume-level:before {
+                   left: -0.4em;
+               }
+           }
+       }
+       ```
+
+  - 样式覆盖
+
+    
+
+  - css前缀
+
+- 移动端兼容问题
+
+  - `@media`
+
+  - 判断 `pc` 端还是移动端
+
+    1. ```javascript
+       /Mobi|Android|iPhone/i.test(navigator.userAgent); //不可靠，userAgent字段可修改
+       ```
+
+    2. ```javascript
+       const isMobile = navigator.userAgentData.mobile; //safari，Firefox不支持
+       ```
+
+    3. ```javascript
+       /Android|iPhone|iPad|iPod/i.test(navigator.platform)// 已废弃，但所有浏览器都支持
+       ```
+       
+    4. 通过屏幕宽度判断
+    
+       ```js
+       if(window.screen.width<500){
+           //移动设备（横屏无法识别）
+       }
+       ```
+    
+    5. ```javascript
+       if(typeof window.orientation !== 'undefined'){
+           // 当前设备时移动设备（只有移动设备有orientation这个侦测屏幕方向的属性）
+       }
+       ```
+    
+    6. ```javascript
+       function isMobile(){
+           return ('ontouchstart' in document.documentElement) // 只有移动设备有触摸事件
+       }
+       ```
+
+#### 滚动洗顶
+
+`position: sticky;`
+
+
+
+#### Flex 默认样式
+
+- 把所有子项变成水平排列
+- 默认不自动换行
+- 让子项与其内容等宽，并把所有子项的高度变为最高子项的高度
+
+#### 页面跳转出现滚动条闪烁问题
+
+> 不同的页面在同一个元素内滚动，需要将滚动条约束在页面的最外层元素。
+
+#### `css` 中使用 `calc` 符号前后需要空格
+
+#### 解决flex布局中between的布局问题
+
+> 当出现多行数量不同时，显示问题很大
+
+grid 布局可以很好解决该问题
+
+```css
+.wrap {
+    width: 100px;
+    display: grid;
+    grid-template-columns: repeat(3, 20px);
+    /* grid-column-gap: 20px; */
+    row-gap: 20px;
+    /* justify-items: start center end; */
+    justify-content: space-between;
+    border: 1px solid #eee;
+}
+
+.wrap>div {
+    width: 20px;
+    height: 20px;
+    background: red;
+    text-align: center;
+    line-height: 20px;
+}
+```
+
+ ![image-20211026143939097](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211026143939097.png)
+
+#### 行内样式的缺点
+
+1. 样式不能复用
+2. 样式权重太高，样式不好覆盖
+3. 表现层与结构层没有分离
+4. 不能进行缓存，影响加载效率
+
+### html
+
+#### 概念
+- 直播回传
+  通过直播间链接跳到第三方页面，第三方页面需要将部分数据返回给直播平台
+  
+- 无障碍
+  
+  帮着开发者和使用者以及浏览器更好的解读网页
+  
+- 代码分割
+
+  项目打包后，将将代码分别打包，加载网页时只加载需要的依赖
+
+#### `video.js` 的使用
+
+```js
+this.player = videojs('player', {
+      controls: true,
+      controlBar: {
+        children: [ //显示那些控件
+          { name: 'playToggle' }, //播放按钮
+          { name: 'currentTimeDisplay' }, //当前播放时间
+          { name: 'timeDivider' }, //分隔符
+          { name: 'durationDisplay' }, //总时长
+          { name: 'volumePanel', inline: false }, // 音量按钮
+          { name: 'FullscreenToggle' }, // 全屏按钮
+          { name: 'progressControl' }, // 进度条
+
+        ],
+
+      },
+
+      preload: 'auto',
+    });
+    this.player.src(src);
+```
+
+
+
+#### 播放器媒体接口
+
+> 常用方法:
+>
+> load() 加载
+>
+> play() 播放
+>
+> pause() 暂停
+>
+> 常用属性:
+>
+> currentTime 视频播放的当前进度
+>
+> duration 视频的总时间 100000/60 (以秒为单位 ，同时带有小数点)
+>
+> paused 视频播放的状态
+>
+> 常用事件：
+>
+> oncanplay: 事件在用户可以开始播放视频/音频（audio/video）时触发。
+>
+> ontimeupdate: 通过该事件来报告当前的播放进度.
+>
+> onended: 播放完时触发—重置
+
+
+
+#### 浏览器测试限制网速
+
+> 模拟不同网络环境下页面的表现
+
+![image-20210722113337298](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210722113337298.png)
+
+
+
+#### serve本地服务器
+
+- 安装
+
+  `npm i serve -g`
+
+- 使用
+
+  `serve [文件夹]`
+
+  或者直接在当前文件夹 `serve`
+
+
+
+### 随笔
+
+> 我知道我终会死去，就如我知道明天的太阳会从东方升起，我只是希望在我垂死之际，除了回忆，还有别的东西帮我克服恐惧，比如这本日记
 
 - 埋点
 
   - `sensorsTrack` 与 `trackEvent`
   - 产品 `id`
-  
-- `popstate` 事件
-
-  > 当活动历史记录条目更改时，将触发popstate事件
-
-  
-
-- 状态提升
-
-  > react 应用中，任何可变数据应当只有一个相对应的唯一“数据源”。通常, state 都是首先添加到需要渲染数据的组件中去。然后，如果其他组件也需要这个 state ，那么你可以将它提升至这些组件的最近共同的父组件中。依靠 **至上而下的数据流**，而不是尝试在不同组件间同步 state 
-
-- `Portals`
-
-  > 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的优秀方案
-
-  ```js
-  ReactDOM.createPortal(child, container)
-  ```
-
-  - 第一个参数是 React 元素
-  - 第二个参数是 DOM 元素
-
-  使用该方案会导致 React 树和 DOM 树不一致
-
-  > portal 仍存在于 *React 树*， 且与 *DOM 树* 中的位置无关，那么无论其子节点是否是 portal，像 context 这样的功能特性都是不变的，事件冒泡也是遵循 react 中的树结构
-
-- `Profiler`
-
-  > 测量渲染一个 React 应用多久渲染一次以及渲染一次的 “代价”
-  
-  
-  
-- `flex` 默认样式
-
-  - 把所有子项变成水平排列
-  - 默认不自动换行
-  - 让子项与其内容等宽，并把所有子项的高度变为最高子项的高度
-
-- 输入框的 `blur` 事件与 `click` 事件冲突
-
-  > blur 事件在 click 之前触发
-  >
-  > 解决：
-  >
-  > 1. 延时
-  >
-  > 2. 可以在mousedown上阻止blur事件发生，然后再在click事件上触发blur事件
-
-- 【需求】登录框背景图作为属性传进去
-
-- 模板字符串嵌套模板字符串
-
-  ```js
-  const imgUrl = `url(${require(`${bgImg}`)})`
-  ```
-  
-- 生命周期写在组件的最开始
-
-  ```
-  class component{
-      生命周期
-      函数
-      render()
-  }
-  ```
-
-  
-
-- 播放器媒体接口
-
-  > 常用方法:
-  >
-  > load() 加载
-  >
-  > play() 播放
-  >
-  > pause() 暂停
-  >
-  > 常用属性:
-  >
-  > currentTime 视频播放的当前进度
-  >
-  > duration 视频的总时间 100000/60 (以秒为单位 ，同时带有小数点)
-  >
-  > paused 视频播放的状态
-  >
-  > 常用事件：
-  >
-  > oncanplay: 事件在用户可以开始播放视频/音频（audio/video）时触发。
-  >
-  > ontimeupdate: 通过该事件来报告当前的播放进度.
-  >
-  > onended: 播放完时触发—重置
-  
-  
