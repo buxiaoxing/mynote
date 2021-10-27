@@ -2861,7 +2861,7 @@ var item = arr.find(element => (age <= 20))
        }
        ```
 
-#### 滚动洗顶
+#### 滚动吸顶
 
 `position: sticky;`
 
@@ -2915,6 +2915,22 @@ grid 布局可以很好解决该问题
 3. 表现层与结构层没有分离
 4. 不能进行缓存，影响加载效率
 
+
+
+#### 多行文字溢出...
+
+```css
+display: -webkit-box;
+/* autoprefixer: off */
+-webkit-box-orient: vertical;
+/* autoprefixer: on */
+-webkit-line-clamp: 2;
+overflow: hidden;
+word-break: break-all;
+```
+
+
+
 ### html
 
 #### 概念
@@ -2933,24 +2949,24 @@ grid 布局可以很好解决该问题
 
 ```js
 this.player = videojs('player', {
-      controls: true,
-      controlBar: {
-        children: [ //显示那些控件
-          { name: 'playToggle' }, //播放按钮
-          { name: 'currentTimeDisplay' }, //当前播放时间
-          { name: 'timeDivider' }, //分隔符
-          { name: 'durationDisplay' }, //总时长
-          { name: 'volumePanel', inline: false }, // 音量按钮
-          { name: 'FullscreenToggle' }, // 全屏按钮
-          { name: 'progressControl' }, // 进度条
+  controls: true,
+  controlBar: {
+    children: [ //显示那些控件
+      { name: 'playToggle' }, //播放按钮
+      { name: 'currentTimeDisplay' }, //当前播放时间
+      { name: 'timeDivider' }, //分隔符
+      { name: 'durationDisplay' }, //总时长
+      { name: 'volumePanel', inline: false }, // 音量按钮
+      { name: 'FullscreenToggle' }, // 全屏按钮
+      { name: 'progressControl' }, // 进度条
 
-        ],
+    ],
 
-      },
+  },
 
-      preload: 'auto',
-    });
-    this.player.src(src);
+  preload: 'auto',
+});
+this.player.src(src);
 ```
 
 
@@ -2987,7 +3003,7 @@ this.player = videojs('player', {
 
 > 模拟不同网络环境下页面的表现
 
-![image-20210722113337298](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210722113337298.png)
+ ![image-20210722113337298](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210722113337298.png)
 
 
 
@@ -3007,7 +3023,7 @@ this.player = videojs('player', {
 
 ### 随笔
 
-> 我知道我终会死去，就如我知道明天的太阳会从东方升起，我只是希望在我垂死之际，除了回忆，还有别的东西帮我克服恐惧，比如这本日记
+> 我知道我终会死去，正如我知道明天的太阳会从东方升起，我只是希望在我垂死之际，除了回忆，还有别的东西帮我克服恐惧，比如这本日记
 
 - 埋点
 
