@@ -2629,8 +2629,51 @@ export default App;
 
 - 解构
   - 数组解构
+  
+    ```js
+    let arr = [1,2]
+    let [a,b] = arr //a=1,b=2
+    
+    [a,b] = [b,a] //swap
+    
+    let [a, ...ret] = [1,2,3,4] //a=1, ret=[2,3,4]
+    
+    let [,a,,b] = [1,2,3,4] //a=2,b=4
+    ```
+  
+    
+  
   - 对象解构
+  
+    ```js
+    let obj = {
+      a: 1,
+      b: 2
+    }
+    let {a,b} = obj // a=1, b=2
+    let {a: a1, b: b1} = obj // a1=1, b1=2 【属性重命名】
+    
+    let {a=100, b} = obj //默认值
+    
+    ```
+  
+    
+  
   - 展开操作符
+  
+    ```js
+    let arr1 = [1,2]
+    let arr2 = [3,4]
+    let newArr = [0, ...arr1, ...arr2] // [0,1,2,3,4]，这里是对arr1 arr2的浅拷贝，修改newArr并不会修改arr1 arr2
+    
+    let obj = {
+      a: 1,
+      b: 2
+    }
+    let newObj = {...obj, a:3} //{a:3, b:2} 后面的属性会覆盖前面的属性 对象只会展开自身的属性，不会展开方法
+    ```
+  
+    
 
 #### 接口
 
@@ -2668,10 +2711,229 @@ interface LabelledValue{
 
   变量使用 `const` 属性使用 `readonly`
 
+- 额外的属性检查
 
+  ```typescript
+  interface SquareConfig {
+      color?: string;
+      width?: number;
+  }
+  
+  function createSquare(config: SquareConfig): { color: string; area: number } {
+      // ...
+  }
+  
+  let mySquare = createSquare({ colour: "red", width: 100 }); //这里会报错，colour属于额外属性，接口没有定义
+  ```
 
+  绕过额外属性检查
+
+  1. 索引签名
+
+     ```typescript
+     interface SquareConfig {
+         color?: string;
+         width?: number;
+         [propName: string]: any;
+     }
+     ```
+
+  2. 类型断言
+
+     ```js
+     let mySquare = createSquare({ width: 100, opacity: 0.5 } as SquareConfig);
+     ```
+
+  3. 中间变量
+
+     ```typescript
+     let squareOptions = { colour: "red", width: 100 };
+     let mySquare = createSquare(squareOptions); // 变量不会进经过额外属性检查
+     ```
+
+- 函数类型
+
+  > 接口除了能够描述属性，还能描述函数
+
+  ```typescript
+  interface SearchFunc {
+    (source: string, subString: string): boolean; // 描述了函数的参数和返回值
+  }
+  
+  let mySearch: SearchFunc;
+  mySearch = function(src: string, sub: string) {
+    // 函数参数名不需要和接口定义参数名一致,也可以不指定类型，ts会推断出类型
+    let result = source.search(subString);
+    return result > -1;
+  }
+  ```
+
+- 可索引类型
+
+  > 例如数组，对象这种可索引类型，arr[1] = "apple"，obj['name']="张三"
+
+  ```typescript
+  interface StringArray {
+    [index: number]: string; 
+    // 可以加readonly设置为只读,防止给索引赋值 
+    // readonly [index: number]: string
+  } // 这里接口定义了一种索引为数字，值为字符串的索引类型
+  
+  let myArray: StringArray;
+  myArray = ["Bob", "Fred"];
+  
+  let myStr: string = myArray[0];
+  ```
+
+- 类类型
+
+  > 实现接口与 java 的接口作用基本一致，强制一个类去符合某种契约
+
+  ```typescript
+  interface ClockInterface {
+      currentTime: Date;
+      setTime(d: Date); // 接口描述方法，类中实现
+  }
+  
+  class Clock implements ClockInterface {
+      currentTime: Date;
+      setTime(d: Date) {
+          this.currentTime = d;
+      }
+      constructor(h: number, m: number) { }
+  }
+  ```
+
+- 继承接口
+
+  > 接口间可以相互继承
+
+  ```typescript
+  interface Shape {
+      color: string;
+  }
+  
+  interface Square extends Shape {// 也可以继承多个类型 extends Shape, PenStroke
+      sideLength: number;
+  }
+  
+  let square = <Square>{};
+  square.color = "blue";
+  square.sideLength = 10;
+  ```
+
+  
+
+- 混合类型
+
+  > 一个对象可以同时作为函数和对象使用，并带有额外属性
+
+  ```typescript
+  interface Counter {
+      (start: number): string;
+      interval: number;
+      reset(): void;
+  }
+  
+  function getCounter(): Counter {
+      let counter = <Counter>function (start: number) { };
+      counter.interval = 123;
+      counter.reset = function () { };
+      return counter;
+  }
+  
+  let c = getCounter();
+  c(10);
+  c.reset();
+  c.interval = 5.0;
+  ```
+
+#### 类
+
+- 类的定义
+
+  > 与面向对象的语言相同，属性/方法/构造器
+
+- 继承
+
+  `extends`
+
+- 公用私有受保护修饰符
+
+  `public` 		  默认
+
+  `private` 		不能在声明类外部访问
+
+  `protect` 		除了自身，还能在派生类中访问
+
+- `readonly` 修饰符
+
+  将属性设置为只读
+
+- 存取器（`get` `set`）
+
+  ```typescript
+  class Employee {
+      private _fullName: string;
+  
+      get fullName(): string {
+          return this._fullName;
+      }
+  
+      set fullName(newName: string) {
+          if (passcode && passcode == "secret passcode") {
+              this._fullName = newName;
+          }
+          else {
+              console.log("Error: Unauthorized update of employee!");
+          }
+      }
+  }
+  ```
+
+  
+
+- 静态属性
+
+  > 存在于类本身而不是类的实例上
+
+- 抽象类
+
+  > 作为其他派生类的基类使用
+  >
+  > 抽象类中的方法不包括实现，必须在派生类中实现，与接口类似
+  >
+  > 抽象类是对事物的抽象，接口是对行为的抽象
+  >
+  > 继承类是“是不是”的关系，实现接口是“有没有”的关系
+
+  ```java
+  interface Alram { // 定义了一个报警的功能
+      void alarm();
+  }
+   
+  abstract class Door { // 定义了门及门的基本行为
+      void open();
+      void close();
+  }
+   
+  class AlarmDoor extends Door implements Alarm {
+      void oepn() {
+        //....
+      }
+      void close() {
+        //....
+      }
+      void alarm() {
+        //....
+      }
+  }
+  ```
+
+  
 
 ### js
+
 #### JS性能优化
 
 ##### 防抖与节流
