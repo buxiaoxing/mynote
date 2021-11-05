@@ -270,6 +270,8 @@
 
 `react` 提供了一个用于创建 `react` 项目的脚手架库：`create-react-app`
 
+`npx create-react-app project`
+
 项目整体架构为：`react` + `webpack` + `es6` + `eslint`
 
 脚手架项目特点：模块化，组件化，工程化
@@ -1850,7 +1852,39 @@
 
 
 
+#### react fiber
 
+> react v16版本的核心算法实现
+
+- `Fiber` 对象
+
+  ```js
+  {
+    
+  }
+  ```
+
+- 帧的概念
+
+  > 目前大多是设备的屏幕刷新率是60次/秒，即60hz
+  >
+  > 当每秒绘制的帧数（FPS）达到60时，页面时流畅的，小于这个值用户会觉得卡顿
+  >
+  > 每帧的预算时间是1/60=16.66(ms)
+  >
+  > 每个帧的开头包括样式计算/布局/绘制
+  >
+  > javaScript执行javaScript引擎和页面渲染引擎在同一个渲染线程，GUI渲染和JavaScript执行两者是互斥的
+  >
+  > 如果某个任务执行时间过长，浏览器就会延迟渲染
+
+  ![image-20211104183738602](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211104183738602.png)
+
+![image-20211104184615557](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211104184615557.png)
+
+
+
+![image-20211104185315352](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211104185315352.png)
 
 ### webpack配置相关
 
@@ -2485,8 +2519,30 @@ export default App;
 - `.git/arc/default-relative-commit`
 
   > 该文件里面指定了arc的根分支
+  
+- `git config --global user.name ""`
+
+  > 设置全局环境下用户名(没有后面字符串就是查询)
+
+- `git config --global user.email ""`
+
+  > 设置全局环境下邮箱
+
+- `git config user.name ""`
+
+  > 设置当前项目下用户名
+
+- `git config user.email ""`
+
+  > 设置当前项目下用户邮箱
 
 
+
+### linux命令
+
+- 删除文件/目录
+
+  `rm -rf 文件名/文件目录`
 
 ### TypeScript
 
@@ -2930,7 +2986,321 @@ interface LabelledValue{
   }
   ```
 
+#### 函数
+
+> 函数声明 函数表达式 匿名函数
+
+- 为函数定义类型
+
+  ```typescript
+  function add(x: number, y: number): number {
+      return x + y;
+  }
   
+  let myAdd = function(x: number, y: number): number { return x + y; };
+  ```
+
+  书写完整函数类型
+
+  ```typescript
+  let myAdd: (x: number, y: number) => number =
+      function(x: number, y: number): number { return x + y; };
+  ```
+
+- 可选参数默认参数
+
+  ```typescript
+  function buildName(firstName: string, lastName?: string) {
+      // ...
+  }
+  
+  function buildName(firstName: string, lastName = "Smith") {
+      // ...
+  }
+  ```
+
+- 剩余参数
+
+  ```typescript
+  function buildName(firstName: string, ...restOfName: string[]) {
+    return firstName + " " + restOfName.join(" ");
+  }
+  
+  let employeeName = buildName("Joseph", "Samuel", "Lucas", "MacKinzie");
+  ```
+
+- `this`
+
+  > `this` 在函数被调用的时候才会制定
+  >
+  > 箭头函数中的 `this` 在函数创建时就指定了
+
+#### 泛型
+
+> 不仅能够支持当前数据类型，还支持未来的数据类型，通过声明的时候通过<>传一个类型参数，内部可以使用该参数实现内部类型的统一，而不用指定某一种固定的类型
+
+- 泛型函数
+
+  ```typescript
+  function identity(arg: any): any {
+      return arg;
+  }
+  ```
+
+  使用`any`类型会导致这个函数可以接收任何类型的`arg`参数，这样就丢失了一些信息：传入的类型与返回的类型应该是相同的。如果我们传入一个数字，我们只知道任何类型的值都有可能被返回。
+
+  ```typescript
+  function identity<T>(arg: T): T {
+      return arg;
+  }
+  
+  let output = identity("myString") //这里没有必要通过<>来强调返回类型的值，ts可以通过查看参数的类型推断出来
+  ```
+
+  泛型则可以解决这个问题，传入什么类型的参数，就返回相同类型的值
+
+- 泛型变量
+
+  ```typescript
+  function loggingIdentity<T>(arg: T[]): T[] {
+      console.log(arg.length);  
+      return arg;
+  }
+  
+  // 这种定义和上面是一致的
+  function loggingIdentity<T>(arg: Array<T>): Array<T> {
+      console.log(arg.length);  // Array has a .length, so no more error
+      return arg;
+  }
+  ```
+
+  上面函数指定了接受参数类型是元素类型为T的数组，返回值类型元素类型为T的数组
+
+- 泛型类型
+
+  ```typescript
+  function identity<T>(arg: T): T {
+      return arg;
+  }
+  
+  let myIdentity: <T>(arg: T) => T = identity; // 这里的泛型作为一种类型，给myIdentity定义类型
+  ```
+
+- 泛型接口
+
+  ```typescript
+  interface GenericIdentityFn { // 定义了一个泛型接口
+      <T>(arg: T): T;
+  }
+  
+  function identity<T>(arg: T): T {
+      return arg;
+  }
+  
+  let myIdentity: GenericIdentityFn = identity;
+  ```
+
+- 泛型类
+
+  ```typescript
+  class GenericNumber<T> {
+      zeroValue: T;
+      add: (x: T, y: T) => T;
+  }
+  
+  let myGenericNumber = new GenericNumber<number>();
+  myGenericNumber.zeroValue = 0;
+  myGenericNumber.add = function(x, y) { return x + y; };
+  ```
+
+  泛型指的是实例部分的类型，类的静态类型不能使用泛型类型
+
+- 泛型约束
+
+  ```typescript
+  interface Lengthwise { // 接口描述了泛型约束的条件
+      length: number;
+  }
+  
+  function loggingIdentity<T extends Lengthwise>(arg: T): T {
+      console.log(arg.length);  // Now we know it has a .length property, so no more error
+      return arg;
+  }
+  ```
+
+  泛型继承了接口，所以传入的类型必须是有 `length` 属性的类型
+
+#### 枚举
+
+> 使用枚举我们可以定义一些带名字的常量。 使用枚举可以清晰地表达意图或创建一组有区别的用例
+
+- 数字枚举
+
+  ```typescript
+  enum Direction {
+      Up = 1,
+      Down,
+      Left,
+      Right
+  }
+  // 上面定义了一个数字枚举，Up的初始值为1，其余的自动增长，Down=2 Left=3 Right=4
+  ```
+
+  枚举的使用：通过枚举属性访问枚举成员，和枚举的名字来访问枚举类型
+
+- 字符串枚举
+
+  > 字符串枚举中，每个成员都必须使用字符串字面量，或者另一个字符串枚举进行初始化，字符串枚举没有初始化不能自动计算值
+
+  ```typescript
+  enum Direction {
+      Up = "UP",
+      Down = "DOWN",
+      Left = "LEFT",
+      Right = "RIGHT",
+  }
+  ```
+
+- 异构枚举
+
+  > 混合字符串和数字成员
+
+  ```typescript
+  enum BooleanLikeHeterogeneousEnum {
+      No = 0,
+      Yes = "YES",
+  }
+  ```
+  
+- 计算成员和常量成员
+
+  > 计算成员：每个枚举成员都带有一个值，可以是常量，也可以是计算出来的
+  >
+  > 常量成员：
+  >
+  > 1. 枚举表达式字面量
+  > 2. 对以定义常量枚举成员的引用
+  > 3. 一元运算符
+  > 4. 二元运算符
+
+  ```typescript
+  enum FileAccess {
+      // 常量成员
+      None,
+      Read    = 1 << 1,
+      Write   = 1 << 2,
+      ReadWrite  = Read | Write,
+      // 计算成员
+      G = "123".length
+  }
+  ```
+
+- 联合枚举和枚举成员类型
+
+  > 字面量枚举成员：不带有初始值的常量枚举成员或值被初始化为字符串字面量，数字字面量
+
+  
+
+- 反向映射
+
+  > 正向：key->value
+  >
+  > 反向：value->key
+
+  ```typescript
+  
+  enum Enum {
+      A
+  }
+  let a = Enum.A; // 正向
+  let nameOfA = Enum[a]; // "A" 反向
+  ```
+
+- `const` 枚举
+
+  > 为了避免额外生成代码的开销和额外的非直接的对枚举成员的访问，只能使用常量枚举表达式
+
+  ```typescript
+  const enum Enum {
+      A = 1,
+      B = A * 2
+  }
+  ```
+
+#### 类型推论
+
+> ts中没有明确指出类型的地方，类型推论会帮助提供类型
+
+```typescript
+let x = 3; // 这里没有明确指出 x 的类型
+```
+
+- 最佳通用类型
+
+  ```typescript
+  let x = [0, 1, null]; // 推断为
+  
+  
+  let zoo = [new Rhino(), new Elephant(), new Snake()]; // 数组没有 Animal 类型，无法推断出该类型，需要指定
+  // 如果没有指定，会推断为联合数组类型 (Rhino | Elephant | Snake)[]
+  let zoo: Animal[] = [new Rhino(), newElephant(), new Snake()]
+  ```
+
+  
+
+#### 类型兼容性
+
+> 名义类型系统：数据类型的兼容性和等价性是通过明确的声明和类型的名称来决定的，如 java, c#
+>
+> 结构类型系统：基于类型的组成结构，不要求明确的声明，如 typescript
+
+```typescript
+interface Named {
+    name: string;
+}
+
+class Person {
+    name: string;
+}
+
+let p: Named;
+// OK, because of structural typing
+p = new Person();
+```
+
+上面的代码 `Person` 类没有明确说明继承了 `Named` 接口，这在名义类型系统中会报错，但在结构类型系统中是正确的
+
+
+
+- 结构类型系统
+
+  > 如果x要兼容y，那么y至少具有与x相同的属性
+
+  ```typescript
+  interface Named {
+      name: string;
+  }
+  
+  let x: Named;
+  // y's inferred type is { name: string; location: string; }
+  let y = { name: 'Alice', location: 'Seattle' };
+  x = y;
+  //检查y能否赋值给x，y的属性中必须包含名字是 name 的 string 类型的成员，y满足条件，赋值正确
+  ```
+
+- 比较两个函数
+
+  ```typescript
+  let x = (a: number) => 0;
+  let y = (b: number, s: string) => 0;
+  
+  y = x; // OK, x对应的参数必须能在y中找到对应类型的参数
+  x = y; // Error, y对应的参数s, 无法在x中找到对应的参数
+  ```
+
+  
+
+
 
 ### js
 
@@ -3191,6 +3561,32 @@ overflow: hidden;
 word-break: break-all;
 ```
 
+#### 边框渐变
+
+```css
+.border-block {
+  border: 10px solid transparent;
+  border-image: linear-gradient(to top, #F80, #2ED);
+  border-image-slice: 10;
+}
+```
+
+边框渐变无法设置圆角，所以无法写出圆角的边框渐变
+
+#### 安卓和iso字体加粗兼容
+
+iso可以在 `font-family` 中 `-` 后写字体的加粗
+
+```css
+font-family: PingFangSC-Semibold;
+```
+
+而在安卓中只能通过 `font-weight` 进行字体加粗
+
+#### Box-shadow
+
+
+
 
 
 ### html
@@ -3285,7 +3681,9 @@ this.player.src(src);
 
 ### 随笔
 
-> 我知道我终会死去，正如我知道明天的太阳会从东方升起，我只是希望在我垂死之际，除了回忆，还有别的东西帮我克服恐惧，比如这本日记
+> - 我知道我终会死去，正如我知道明天的太阳会从东方升起，我只是希望在我垂死之际，除了回忆，还有别的东西帮我克服恐惧，比如这本日记
+>
+> - 这种不爽就喷的态度太容易污染人了，因为太简单了，不用思考，只需要暴露人性本恶的丑态再动动手指就行，还能博得认同
 
 - 埋点
 
