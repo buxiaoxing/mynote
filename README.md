@@ -1,4 +1,4 @@
-### React
+### 	React
 
 #### React概念
 
@@ -196,7 +196,7 @@
 
 
 
-**只有类组件才具有生命周期方法，函数组件是没有生命周期方法的，因此永远不要在函数组件中使用生命周期方法。**
+**只有类组件才具有生命周期方法，函数组件是没有生命周期方法的，因此永远不要在函数组件中使用生命周期方法（函数中可以使用hook来模拟生命周期）。**
 
 相关文章
 
@@ -1854,13 +1854,24 @@
 
 #### react fiber
 
-> react v16版本的核心算法实现
+> Stack Reconciler 是 React v15 及之前版本使用的协调算法。而 React Fiber 则是从 v16 版本开始对 Stack Reconciler 进行的重写，是 v16 版本的核心算法实现。
+>
+> Stack Reconciler 通过递归的方式进行渲染，使用的是 JS 引擎自身的函数调用栈，它会一直执行到栈空为止。而`Fiber`实现了自己的组件调用栈，它以链表的形式遍历组件树，可以灵活的暂停、继续和丢弃执行的任务。实现方式是使用了浏览器的`requestIdleCallback`这一 API
+>
+> 源码层面就是递归改循环
+
+https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，用于比较react stack 和 react fiber
+
+> 在页面元素很多，且需要频繁刷新的场景下，Stack Reconciler 会出现掉帧的现象。其根本原因，是大量的同步计算任务阻塞了浏览器的 UI 渲染。默认情况下，JS 运算、页面布局和页面绘制都是运行在浏览器的主线程当中，他们之间是互斥的关系。如果 JS 运算持续占用主线程，页面就没法得到及时的更新。当我们调用`setState`更新页面的时候，React 会遍历应用的所有节点，计算出差异，然后再更新 UI。整个过程是一气呵成，不能被打断的。如果页面元素很多，整个过程占用的时机就可能超过 16 毫秒，就容易出现掉帧的现象。
 
 - `Fiber` 对象
 
   ```js
   {
-    
+    	stateNode,    // 节点实例
+      child,        // 子节点
+      sibling,      // 兄弟节点
+      return,       // 父节点
   }
   ```
 
@@ -1885,6 +1896,20 @@
 
 
 ![image-20211104185315352](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211104185315352.png)
+
+
+
+- `stack reconciler`
+
+  > Stack Reconciler 运作的过程是不能被打断的，必须一条道走到黑
+
+  ![image-20211203104350809](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104350809.png)
+
+- `fiber reconciler`
+
+  > 每执行一段时间，都会将控制权交回给浏览器，可以分段执行
+
+   ![image-20211203104422545](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104422545.png)
 
 ### webpack配置相关
 
@@ -2543,6 +2568,14 @@ export default App;
 - 删除文件/目录
 
   `rm -rf 文件名/文件目录`
+
+
+
+### 区块链
+
+- 钱包
+- 矿池
+- 交易所
 
 ### TypeScript
 
@@ -3408,7 +3441,38 @@ var item = arr.find(element => (age <= 20))
 
 
 
+#### 对象结构复制重命名
 
+```js
+const {data} = this.state
+const {data: newData} = this.state
+```
+
+#### 函数可读性
+
+- RORO模式
+
+  > 函数始终应该传入一个对象并返回一个对象
+
+
+
+#### js输入函数
+
+`readline`
+
+- 数字常用方法
+
+  `Math.round(num)` 四舍五入取整
+
+- 数组常用方法
+  - `pop`
+  - `join(str)` 数组转字符串，每个元素以str分割
+- 字符串常用方法
+  - `str.toUpperCase()` 	转为大写字母
+  - `str.split()` 字符串分割为数组
+  - `str.padStart(length, str)` `str.padEnd()` 字符串补全长度功能
+  - `str.slice(start, [end])`  提取字符串某部分并返回
+  - `parseInt(str, [进制])`  以参数进制转为10进制
 
 ### css
 
@@ -3587,6 +3651,83 @@ font-family: PingFangSC-Semibold;
 
 
 
+#### 扫光特效
+
+> 将半透明的光条图切图作为背景图，动画调整`background-position`
+
+```css
+animation: saoguang2 1s cubic-bezier(0.33, 0, 0.67, 1.00) .5s infinite;
+
+@keyframes saoguang2 {
+  0% {
+    background-position: top 0 left -61px;
+  }
+
+  100% {
+    background-position: top 0 left 92px;
+  }
+}
+```
+
+
+
+#### 波纹特效
+
+> 将多个有shadow的按不同的开始时间调整大小和透明度
+
+```css
+.water1,
+.water2 {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.90);
+  box-shadow: inset 0 0 26px 0 #FFFFFF;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+@-webkit-keyframes wateranimate {
+  0% {
+    -webkit-transform: scale(0);
+    opacity: 0.5;
+  }
+
+  100% {
+    -webkit-transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes wateranimate {
+  0% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  100% {
+    -webkit-transform: scale(1.5);
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+```
+
+
+
+#### `accent-color`
+
+选择框选中时的颜色
+
+#### 黑夜模式
+
+```css
+html {
+  filter: invert(1);
+}
+```
+
 
 
 ### html
@@ -3657,13 +3798,25 @@ this.player.src(src);
 
 
 
-#### 浏览器测试限制网速
+#### 浏览器调试
 
-> 模拟不同网络环境下页面的表现
+1. 模拟不同网络环境下页面的表现
 
- ![image-20210722113337298](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210722113337298.png)
+    ![image-20210722113337298](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20210722113337298.png)
 
+2. 清除localStorage
 
+    ![image-20211125115915982](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211125115915982.png)
+
+3. debugger
+
+    ![image-20211125120043687](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211125120043687.png)
+
+5. 请求参数
+
+    ![image-20211125120241702](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211125120241702.png)
+
+   再使用base64解码
 
 #### serve本地服务器
 
