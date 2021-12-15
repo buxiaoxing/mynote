@@ -1864,6 +1864,62 @@ https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，
 
 > 在页面元素很多，且需要频繁刷新的场景下，Stack Reconciler 会出现掉帧的现象。其根本原因，是大量的同步计算任务阻塞了浏览器的 UI 渲染。默认情况下，JS 运算、页面布局和页面绘制都是运行在浏览器的主线程当中，他们之间是互斥的关系。如果 JS 运算持续占用主线程，页面就没法得到及时的更新。当我们调用`setState`更新页面的时候，React 会遍历应用的所有节点，计算出差异，然后再更新 UI。整个过程是一气呵成，不能被打断的。如果页面元素很多，整个过程占用的时机就可能超过 16 毫秒，就容易出现掉帧的现象。
 
+- demo
+
+  > 我们可以通过以下一个简单的demo窥探React的优化思想
+
+  ```js
+  function randomHexColor() {
+    return "#" + ("0000" + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
+  }
+  setTimeout(function () {
+    var k = 0;
+    var root = document.getElementById("root");
+    for (var i = 0; i < 100000; i++) {
+      k += new Date - 0;
+      var el = document.createElement("div");
+      el.innerHTML = k;
+      root.appendChild(el);
+      el.style.cssText = `background:${randomHexColor()};height:40px`;
+    }
+  }, 1000);
+  ```
+
+  **这是一个拥有100000个节点的插入操作，包含了innerHTML与样式设置，花掉2000ms。**
+
+  ![image-20211215184521110](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211215184521110.png)
+
+  优化一下，分派次插入节点，每次只操作100个节点，共1000次
+
+  ```js
+  function randomHexColor() {
+    return "#" + ("0000" + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
+  }
+  var root = document.getElementById("root");
+  setTimeout(function () {
+    function loop(n) {
+      var k = 0;
+      console.log(n);
+      for (let j = 0; j < n; j++) {
+        setTimeout(function () {
+          for (var i = 0; i < 100; i++) {
+            k += new Date - 0;
+            var el = document.createElement("div");
+            el.innerHTML = k;
+            root.appendChild(el);
+            el.style.cssText = `background:${randomHexColor()};height:40px`;
+          }
+        }, 40)
+      }
+    }
+    loop(1000);
+  }, 1000);
+  ```
+
+  
+
+  ![image-20211215184343963](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211215184343963.png)
+
 - `Fiber` 对象
 
   ```js
@@ -1874,6 +1930,20 @@ https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，
       return,       // 父节点
   }
   ```
+
+  
+
+- `stack reconciler`
+
+  > Stack Reconciler 运作的过程是不能被打断的，必须一条道走到黑
+
+  ![image-20211203104350809](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104350809.png)
+
+- `fiber reconciler`
+
+  > 每执行一段时间，都会将控制权交回给浏览器，可以分段执行
+
+   ![image-20211203104422545](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104422545.png)
 
 - 帧的概念
 
@@ -1896,20 +1966,6 @@ https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，
 
 
 ![image-20211104185315352](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211104185315352.png)
-
-
-
-- `stack reconciler`
-
-  > Stack Reconciler 运作的过程是不能被打断的，必须一条道走到黑
-
-  ![image-20211203104350809](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104350809.png)
-
-- `fiber reconciler`
-
-  > 每执行一段时间，都会将控制权交回给浏览器，可以分段执行
-
-   ![image-20211203104422545](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104422545.png)
 
 ### webpack配置相关
 
