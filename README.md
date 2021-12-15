@@ -1856,13 +1856,14 @@
 
 > Stack Reconciler 是 React v15 及之前版本使用的协调算法。而 React Fiber 则是从 v16 版本开始对 Stack Reconciler 进行的重写，是 v16 版本的核心算法实现。
 >
-> Stack Reconciler 通过递归的方式进行渲染，使用的是 JS 引擎自身的函数调用栈，它会一直执行到栈空为止。而`Fiber`实现了自己的组件调用栈，它以链表的形式遍历组件树，可以灵活的暂停、继续和丢弃执行的任务。实现方式是使用了浏览器的`requestIdleCallback`这一 API
+> Stack Reconciler 通过递归的方式进行渲染，使用的是 JS 引擎自身的函数调用栈，它会一直执行到栈空为止。而`Fiber`实现了自己的组件调用栈，它以链表的形式遍历组件树，可以灵活的暂停、继续和丢弃执行的任务。
 >
-> 源码层面就是递归改循环
 
 https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，用于比较react stack 和 react fiber
 
 > 在页面元素很多，且需要频繁刷新的场景下，Stack Reconciler 会出现掉帧的现象。其根本原因，是大量的同步计算任务阻塞了浏览器的 UI 渲染。默认情况下，JS 运算、页面布局和页面绘制都是运行在浏览器的主线程当中，他们之间是互斥的关系。如果 JS 运算持续占用主线程，页面就没法得到及时的更新。当我们调用`setState`更新页面的时候，React 会遍历应用的所有节点，计算出差异，然后再更新 UI。整个过程是一气呵成，不能被打断的。如果页面元素很多，整个过程占用的时机就可能超过 16 毫秒，就容易出现掉帧的现象。
+
+
 
 - demo
 
@@ -1885,9 +1886,13 @@ https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，
   }, 1000);
   ```
 
-  **这是一个拥有100000个节点的插入操作，包含了innerHTML与样式设置，花掉2000ms。**
+  
+
+  这是一个拥有100000个节点的插入操作，包含了innerHTML与样式设置，花掉2000ms。
 
   ![image-20211215184521110](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211215184521110.png)
+
+  
 
   优化一下，分派次插入节点，每次只操作100个节点，共1000次
 
@@ -1920,16 +1925,7 @@ https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，
 
   ![image-20211215184343963](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211215184343963.png)
 
-- `Fiber` 对象
-
-  ```js
-  {
-    	stateNode,    // 节点实例
-      child,        // 子节点
-      sibling,      // 兄弟节点
-      return,       // 父节点
-  }
-  ```
+  
 
   
 
@@ -1939,11 +1935,143 @@ https://claudiopro.github.io/react-fiber-vs-stack-demo/ 一个官方的例子，
 
   ![image-20211203104350809](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104350809.png)
 
+  
+
 - `fiber reconciler`
 
   > 每执行一段时间，都会将控制权交回给浏览器，可以分段执行
 
    ![image-20211203104422545](https://gitee.com/buxiaoxing/image-bed/raw/master/img/image-20211203104422545.png)
+
+
+
+- `fiber` 是什么
+
+  > fiber 是一个对象
+  >
+  > 位置：packages/react-reconciler/src/ReactFiber.js/row: 85
+
+  ```js
+  Fiber = {
+    return: Fiber | null, 
+    child: Fiber | null,
+    sibling: Fiber | null,
+  }
+  ```
+
+  `fiber` 树结构图（链表结构）：
+
+   ![image-20211215214418567](https://gitee.com/buxiaoxing/image-bed/raw/master/image/20211215214555.png)
+
+
+
+- 源码调用流程
+
+  ![image-20211215215459046](https://gitee.com/buxiaoxing/image-bed/raw/master/image/20211215215501.png)
+  - reconciler阶段是对Virtual DOM操作阶段，找到需要更新的工作
+  - render阶段是渲染阶段，拿到更新工作，在不同应用中，使用不同的渲染方式进行渲染
+
+  
+
+  reconsiler 模块可以分为两个部分
+
+  1. reconciliation
+
+     >  通过 Diff Fiber Tree 找出要做的更新工作，这是一个js计算过程，计算结果可以被缓存，计算过程可以被打断，也可以恢复执行
+
+     这里以 `ReactDOM.render()` 方法为入口，看一下 `reconciliation` 阶段的调用流程
+
+     
+
+  2. commit
+
+     > 提交更新并调用对应渲染模块进行渲染，为了防止页面抖动，该过程是同步且不能被打断
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 - 帧的概念
 
